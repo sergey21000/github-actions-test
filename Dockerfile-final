@@ -1,14 +1,9 @@
 FROM python:3.12-slim
-
 WORKDIR /app
-
-# Копируем заранее собранные колёса
 COPY wheels /wheels
 
 RUN pip install --no-cache-dir /wheels/* \
     && rm -rf /wheels
 
-# Проверим, что библиотеки реально ставятся
 COPY test.py .
-
 CMD ["python3", "test.py"]
