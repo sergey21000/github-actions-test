@@ -1,0 +1,56 @@
+name: Test Wheels Build
+
+on: workflow_dispatch
+
+jobs:
+  build-wheels:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and extract wheels
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile-builder
+          push: false
+          platforms: linux/amd64
+          target: export-wheels
+          outputs: type=local,dest=./wheels-out
+
+      - name: Upload wheels artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-wheels
+          path: ./wheels-out/wheels/
+
+  build-final:
+    runs-on: ubuntu-24.04
+    needs: build-wheels
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download wheels artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: python-wheels
+          path: ./wheels/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and run final image (test)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile-final
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: test-final:latest
+
+      - name: Run container
+        run: docker run --rm test-final:latest
