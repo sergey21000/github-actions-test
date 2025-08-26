@@ -4,9 +4,8 @@ FROM python:3.12 AS builder
 WORKDIR /build
 COPY requirements.txt .
 
-# Собираем колёса в /wheels
 RUN pip wheel --no-cache-dir --no-deps -r requirements.txt -w /wheels
 
-# stage 2: экспортируем только wheels
+# stage 2: export wheels
 FROM scratch AS export-wheels
 COPY --from=builder /wheels /wheels
