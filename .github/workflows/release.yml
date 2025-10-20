@@ -31,3 +31,5 @@ jobs:
             Automatic release for version ${{ steps.version.outputs.version }}
           files: |
             *.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
